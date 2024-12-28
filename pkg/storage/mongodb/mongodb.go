@@ -1,13 +1,15 @@
 package mongodb
 
 import (
-    "context"
-    "time"
-    
-    "github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
-    "github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	"context"
+	"time"
+	"fmt"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type MongoDB struct {
@@ -38,14 +40,31 @@ func New(cfg *config.Config) (*MongoDB, error) {
 }
 
 // User operations
-func (m *MongoDB) CreateUser(name, email, password string) (string, error) {
+func (m *MongoDB) CreateUser(name, email, password, studentId string) (string, error) {
     collection := m.db.Collection("users")
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
+    
+    emailCount, err := collection.CountDocuments(ctx, bson.M{"email": email})
+    if err != nil {
+        return "", err
+    }
+    if emailCount > 0 {
+        return "", fmt.Errorf("user with email %s already exists", email)
+    }
+
+    studentIdCount, err := collection.CountDocuments(ctx, bson.M{"studentId": studentId})
+    if err != nil {
+        return "", err
+    }
+    if studentIdCount > 0 {
+        return "", fmt.Errorf("user with student ID %s already exists", studentId)
+    }
 
     user := types.User{
         Name:      name,
         Email:     email,
+		StudentId: studentId,
         Password:  password,  // Note: In production, ensure this is hashed
         CreatedAt: time.Now(),
     }
@@ -55,5 +74,5 @@ func (m *MongoDB) CreateUser(name, email, password string) (string, error) {
         return "", err
     }
 
-    return result.InsertedID.(string), nil
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }

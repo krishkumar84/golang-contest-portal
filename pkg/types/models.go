@@ -5,10 +5,10 @@ import (
 )
 
 type User struct {
-    ID        string    `bson:"_id,omitempty" json:"user_id" validate:"required"`
     Name      string    `bson:"name" json:"name" validate:"required"`
     Email     string    `bson:"email" json:"email" validate:"required"`
     Password  string    `bson:"password" json:"password" validate:"required"`
+	StudentId string    `bson:"studentId" json:"studentId" validate:"required"`
     CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
 
