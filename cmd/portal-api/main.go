@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/auth"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage/mongodb"
 	// "github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
@@ -40,7 +41,8 @@ func main() {
 		w.Write([]byte("Hello krish this side  and server is up and running "))
 	})
 
-	router.HandleFunc("POST /api/users",users.New(storage))
+	router.HandleFunc("POST /api/signup",users.New(storage))
+	router.HandleFunc("POST /api/login",auth.Login(storage,cfg.JwtSecret))
     // router.HandleFunc("GET /api/users/{id}",users.GetById(storage))
 	// router.HandleFunc("GET /api/users",users.GetAll(storage))
     

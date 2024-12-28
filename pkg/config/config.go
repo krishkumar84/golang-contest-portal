@@ -17,6 +17,7 @@ type Config struct {
 	Env    string `yaml:"env" env:"ENV" env-required:"true" env-default:"production"`
     DatabaseURL string `yaml:"DatabaseURL" env-required:"true"`
     DatabaseName string `yaml:"DatabaseName" env-required:"true"`
+	JwtSecret    string `yaml:"JwtSecret"`
 	HTTPServer `yaml:"http_server"`
 }
 

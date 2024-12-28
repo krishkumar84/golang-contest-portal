@@ -1,15 +1,18 @@
 package types
 
 import (
-    "time"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-    Name      string    `bson:"name" json:"name" validate:"required"`
-    Email     string    `bson:"email" json:"email" validate:"required"`
-    Password  string    `bson:"password" json:"password" validate:"required"`
-	StudentId string    `bson:"studentId" json:"studentId" validate:"required"`
-    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+    ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+    Name      string            `bson:"name" json:"name" validate:"required"`
+    Email     string            `bson:"email" json:"email" validate:"required"`
+    Password  string            `bson:"password" json:"password" validate:"required"`
+    StudentId string            `bson:"studentId" json:"studentId" validate:"required"`
+    CreatedAt time.Time         `bson:"createdAt" json:"createdAt"`
 }
 
 type Contest struct {

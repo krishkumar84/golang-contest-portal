@@ -2,14 +2,15 @@ package mongodb
 
 import (
 	"context"
-	"time"
 	"fmt"
+	"time"
+
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 type MongoDB struct {
@@ -62,10 +63,11 @@ func (m *MongoDB) CreateUser(name, email, password, studentId string) (string, e
     }
 
     user := types.User{
+        ID:        primitive.NewObjectID(),
         Name:      name,
         Email:     email,
-		StudentId: studentId,
-        Password:  password,  // Note: In production, ensure this is hashed
+        StudentId: studentId,
+        Password:  password,
         CreatedAt: time.Now(),
     }
 
@@ -75,4 +77,20 @@ func (m *MongoDB) CreateUser(name, email, password, studentId string) (string, e
     }
 
     return result.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+
+
+func (m *MongoDB) GetUserByEmail(email string) (*types.User, error) {
+    collection := m.db.Collection("users")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    var user types.User
+    err := collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+    if err != nil {
+        return nil, err
+    }
+
+    return &user, nil
 }
