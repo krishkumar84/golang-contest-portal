@@ -10,7 +10,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage/mongodb"
 	// "github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
 )
 
@@ -22,11 +24,12 @@ func main() {
 
 
 	//database
-    // storage,err := sqlite.New(cfg)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// slog.Info("Database connected",cfg.Env)
+	//storage
+    _, err := mongodb.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	slog.Info("Database connected",cfg.DatabaseName)
 
 	//setup router
 
