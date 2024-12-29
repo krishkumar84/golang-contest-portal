@@ -30,7 +30,7 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email krish221200867@gmail.com -d 3.110.121.105.nip.io --agree-tos --no-eff-email
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email krish221200867@gmail.com -d 3.110.121.105.nip.io --agree-tos --no-eff-email --force-renewal
 
 networks:
   app-network:
