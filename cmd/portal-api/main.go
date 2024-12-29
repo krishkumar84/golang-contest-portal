@@ -13,7 +13,9 @@ import (
 
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/auth"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/test"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/middleware"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage/mongodb"
 	// "github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
 )
@@ -33,8 +35,10 @@ func main() {
 	}
 	slog.Info("Database connected",cfg.DatabaseName)
 
-	//setup router
+	// Initialize auth middleware
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JwtSecret)
 
+	// Setup routes
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET/health", func(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +50,20 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Welcome to BDCOE Portal API server is dockerized up and running"))
 	})
+
+	router.Handle("GET /api/user/test", 
+    authMiddleware.Authenticate(
+        http.HandlerFunc(test.TestUserRoute),
+    ),
+)
+
+router.Handle("GET /api/admin/test", 
+    authMiddleware.Authenticate(
+        authMiddleware.RequireAdmin(
+            http.HandlerFunc(test.TestAdminRoute),
+        ),
+    ),
+)
 
 	router.HandleFunc("POST /api/signup",users.New(storage))
 	router.HandleFunc("POST /api/login",auth.Login(storage,cfg.JwtSecret))
