@@ -44,11 +44,7 @@ func main() {
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Welcome to BDCOE Portal API"))
-	})
-
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello krish this side  and server is up and running "))
+		w.Write([]byte("Welcome to BDCOE Portal API server is dockerized up and running"))
 	})
 
 	router.HandleFunc("POST /api/signup",users.New(storage))
