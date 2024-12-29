@@ -3,3 +3,7 @@
 .env
 *.md
 /config/*.yaml
+*.md
+certbot/
+node_modules/
+tmp/
