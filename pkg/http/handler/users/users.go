@@ -39,7 +39,7 @@ func New(storage storage.Storage) http.HandlerFunc{
 			return
 		}
 
-		lastId, err := storage.CreateUser(user.Name, user.Email, user.Password, user.StudentId)
+		lastId, err := storage.CreateUser(user.Name, user.Email, user.Password, user.StudentId,types.RoleUser)
 
 		slog.Info("User created sucessfully",slog.String("userId",fmt.Sprint(lastId)))
 		if err != nil {

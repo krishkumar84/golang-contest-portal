@@ -41,7 +41,7 @@ func New(cfg *config.Config) (*MongoDB, error) {
 }
 
 // User operations
-func (m *MongoDB) CreateUser(name, email, password, studentId string) (string, error) {
+func (m *MongoDB) CreateUser(name, email, password, studentId string, role types.Role) (string, error) {
     collection := m.db.Collection("users")
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
@@ -69,6 +69,7 @@ func (m *MongoDB) CreateUser(name, email, password, studentId string) (string, e
         StudentId: studentId,
         Password:  password,
         CreatedAt: time.Now(),
+        Role:      role,
     }
 
     result, err := collection.InsertOne(ctx, user)

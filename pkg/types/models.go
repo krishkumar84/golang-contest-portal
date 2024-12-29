@@ -5,6 +5,11 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+type Role string
+const (
+    RoleUser  Role = "user"
+    RoleAdmin Role = "admin"
+)
 
 type User struct {
     ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
@@ -13,6 +18,7 @@ type User struct {
     Password  string            `bson:"password" json:"password" validate:"required"`
     StudentId string            `bson:"studentId" json:"studentId" validate:"required"`
     CreatedAt time.Time         `bson:"createdAt" json:"createdAt"`
+    Role      Role              `bson:"role" json:"role" default:"user"`
 }
 
 type Contest struct {
