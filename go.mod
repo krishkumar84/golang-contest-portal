@@ -1,6 +1,6 @@
 module github.com/krishkumar84/bdcoe-golang-portal
 
-go 1.23.4
+go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
