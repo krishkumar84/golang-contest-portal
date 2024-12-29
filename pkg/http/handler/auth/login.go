@@ -42,6 +42,7 @@ func Login(storage storage.Storage, secretKey string) http.HandlerFunc {
         token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
             "user_id": user.ID,
             "student_id": user.StudentId,
+            "role":      string(user.Role),
             "exp": time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
         })
 
