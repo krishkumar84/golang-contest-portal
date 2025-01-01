@@ -26,5 +26,54 @@ type Contest struct {
     Title     string    `bson:"title" json:"title" validate:"required"`
     StartTime time.Time `bson:"start_time" json:"start_time" validate:"required"`
     EndTime   time.Time `bson:"end_time" json:"end_time" validate:"required"`
-    Questions []string  `bson:"questions" json:"questions" validate:"required"`
+    Questions []Question `bson:"questions" json:"questions" validate:"required"`
+    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+}
+
+type Question struct {
+    ID        string    `bson:"_id,omitempty" json:"question_id" validate:"required"`
+    Title     string    `bson:"title" json:"title" validate:"required"`
+    Description string `bson:"description" json:"description" validate:"required"`
+    Difficulty string `bson:"difficulty" json:"difficulty"`
+    Tags []string     `bson:"tags" json:"tags"`
+    TestCases   []TestCase `bson:"test_cases" json:"test_cases" validate:"required"`
+    Points int `bson:"points" json:"points"`
+    Cpu_time_limit int `bson:"cpu_time_limit" json:"cpu_time_limit"`
+    Memory_limit int `bson:"memory_limit" json:"memory_limit"`
+    CreatedBy primitive.ObjectID `bson:"created_by" json:"created_by"`
+    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+}
+
+type Visibility string
+
+const (
+    VisibilityPublic  Visibility = "public"
+    VisibilityPrivate Visibility = "private"
+)
+
+type TestCase struct {
+    ID string `bson:"_id,omitempty" json:"test_case_id"`
+    Input interface{} `bson:"input" json:"input"`
+    ExpectedOutput interface{} `bson:"expected_output" json:"expected_output"`
+    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+    Visibility Visibility `bson:"visibility" json:"visibility" validate:"required,oneof=public private"`
+}
+
+type Submission struct {
+    ID string `bson:"_id,omitempty" json:"submission_id"`
+    UserID primitive.ObjectID `bson:"user_id" json:"user_id"`
+    QuestionID primitive.ObjectID `bson:"question_id" json:"question_id"`
+    ContestID primitive.ObjectID `bson:"contest_id" json:"contest_id"`
+    Code string `bson:"code" json:"code"`
+    LanguageId string `bson:"language_id" json:"language_id"`
+    Status string `bson:"status" json:"status"`
+    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+}
+
+type Leaderboard struct {
+    ID string `bson:"_id,omitempty" json:"leaderboard_id"`
+    UserID primitive.ObjectID `bson:"user_id" json:"user_id"`
+    ContestID primitive.ObjectID `bson:"contest_id" json:"contest_id"`
+    LeaderboardScore int `bson:"leaderboard_score" json:"leaderboard_score"`
+    CreatedAt time.Time `bson:"created_at" json:"created_at"`
 }
