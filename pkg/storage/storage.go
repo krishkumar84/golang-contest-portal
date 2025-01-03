@@ -11,4 +11,5 @@ type Storage interface {
 	CreateContest(contest types.Contest) (string, error)
 	CreateQuestion(question types.Question) (string, error)
 	CreateTestCase(testCase types.TestCase) (string, error)
+	GetAllContests() ([]types.ContestBasicInfo, error)
 }

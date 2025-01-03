@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-    "github.com/go-playground/validator/v10"
 )
 
 type MongoDB struct {
@@ -147,4 +147,31 @@ func (m *MongoDB) CreateTestCase(testCase types.TestCase) (string, error) {
     }
 
     return result.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (m *MongoDB) GetAllContests() ([]types.ContestBasicInfo, error) {
+    collection := m.db.Collection("contests")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    projection := bson.D{
+        {Key: "_id", Value: 1},
+        {Key: "title", Value: 1},
+        {Key: "start_time", Value: 1},
+        {Key: "end_time", Value: 1},
+        {Key: "description", Value: 1},
+    }
+
+    var contests []types.ContestBasicInfo
+    cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetProjection(projection))
+    if err != nil {
+        return nil, err
+    }
+    defer cursor.Close(ctx)
+
+    if err = cursor.All(ctx, &contests); err != nil {
+        return nil, err
+    }
+
+    return contests, nil
 }

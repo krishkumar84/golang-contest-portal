@@ -1,8 +1,9 @@
 package contest
 
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
+
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/utils/response"
@@ -23,5 +24,17 @@ func CreateContest(storage storage.Storage) http.HandlerFunc {
 		}
 
 		response.WriteJson(w, http.StatusCreated, map[string]string{"contest_id": contestId})
+	}
+}
+
+func GetAllContests(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contests, err := storage.GetAllContests()
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+		
+		response.WriteJson(w, http.StatusOK, contests)
 	}
 }
