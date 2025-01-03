@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+    "github.com/go-playground/validator/v10"
 )
 
 type MongoDB struct {
@@ -94,4 +95,56 @@ func (m *MongoDB) GetUserByEmail(email string) (*types.User, error) {
     }
 
     return &user, nil
+}
+
+func (m *MongoDB) CreateContest(contest types.Contest) (string, error) {
+    collection := m.db.Collection("contests")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    if err := validator.New().Struct(contest); err != nil {
+        validateErrs := err.(validator.ValidationErrors)
+        return "", fmt.Errorf("validation failed: %v", validateErrs)
+    }
+    result, err := collection.InsertOne(ctx, contest)
+    if err != nil {
+        return "", err
+    }
+
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (m *MongoDB) CreateQuestion(question types.Question) (string, error) {
+    collection := m.db.Collection("questions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    if err := validator.New().Struct(question); err != nil {
+        validateErrs := err.(validator.ValidationErrors)
+        return "", fmt.Errorf("validation failed: %v", validateErrs)
+    }
+
+    result, err := collection.InsertOne(ctx, question)
+    if err != nil {
+        return "", err
+    }
+
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (m *MongoDB) CreateTestCase(testCase types.TestCase) (string, error) {
+    collection := m.db.Collection("test_cases")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    if err := validator.New().Struct(testCase); err != nil {
+        validateErrs := err.(validator.ValidationErrors)
+        return "", fmt.Errorf("validation failed: %v", validateErrs)
+    }
+
+    result, err := collection.InsertOne(ctx, testCase)
+    if err != nil {
+        return "", err
+    }
+
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
