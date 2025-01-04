@@ -101,10 +101,16 @@ func (m *MongoDB) CreateContest(contest types.Contest) (string, error) {
     collection := m.db.Collection("contests")
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
+
     if err := validator.New().Struct(contest); err != nil {
         validateErrs := err.(validator.ValidationErrors)
         return "", fmt.Errorf("validation failed: %v", validateErrs)
     }
+
+    if contest.QuestionIDs == nil {
+        contest.QuestionIDs = []string{}
+    }
+
     result, err := collection.InsertOne(ctx, contest)
     if err != nil {
         return "", err

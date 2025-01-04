@@ -13,13 +13,13 @@ import (
 
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/config"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/auth"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/contest"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/question"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/test"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/testcase"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/middleware"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage/mongodb"
-	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/contest"
-	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/question"
-	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/testcase"
 	// "github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
 )
 
