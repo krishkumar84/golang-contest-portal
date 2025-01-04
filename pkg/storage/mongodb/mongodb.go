@@ -175,3 +175,67 @@ func (m *MongoDB) GetAllContests() ([]types.ContestBasicInfo, error) {
 
     return contests, nil
 }
+
+func (m *MongoDB) GetContestById(id string) ([]bson.M, error) {
+    objectId, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return nil, fmt.Errorf("invalid contest id format")
+    }
+
+    pipeline := mongo.Pipeline{
+        {{Key: "$match", Value: bson.D{{Key: "_id", Value: objectId}}}},
+        {{Key: "$addFields", Value: bson.D{
+            {Key: "question_ids", Value: bson.D{
+                {Key: "$map", Value: bson.D{
+                    {Key: "input", Value: "$question_ids"},
+                    {Key: "as", Value: "qid"},
+                    {Key: "in", Value: bson.D{
+                        {Key: "$toObjectId", Value: "$$qid"},
+                    }},
+                }},
+            }},
+        }}},
+        {{Key: "$lookup", Value: bson.D{
+            {Key: "from", Value: "questions"},
+            {Key: "localField", Value: "question_ids"},
+            {Key: "foreignField", Value: "_id"},
+            {Key: "as", Value: "questions"},
+        }}},
+        {{Key: "$project", Value: bson.D{
+            {Key: "_id", Value: "$_id"},
+            {Key: "title", Value: "$title"},
+            {Key: "start_time", Value: "$start_time"},
+            {Key: "end_time", Value: "$end_time"},
+            {Key: "description", Value: "$description"},
+            {Key: "questions", Value: bson.D{
+                {Key: "$map", Value: bson.D{
+                    {Key: "input", Value: "$questions"},
+                    {Key: "as", Value: "q"},
+                    {Key: "in", Value: bson.D{
+                        {Key: "_id", Value: "$$q._id"},
+                        {Key: "title", Value: "$$q.title"},
+                        {Key: "description", Value: "$$q.description"},
+                        {Key: "difficulty", Value: "$$q.difficulty"},
+                    }},
+                }},
+            }},
+        }}},
+    }
+
+    var results []bson.M
+    cursor, err := m.db.Collection("contests").Aggregate(context.Background(), pipeline)
+    if err != nil {
+        return nil, fmt.Errorf("error executing aggregation: %v", err)
+    }
+    defer cursor.Close(context.Background())
+
+    if err := cursor.All(context.Background(), &results); err != nil {
+        return nil, fmt.Errorf("error decoding result: %v", err)
+    }
+
+    if len(results) == 0 {
+        return nil, mongo.ErrNoDocuments
+    }
+
+    return results, nil
+}

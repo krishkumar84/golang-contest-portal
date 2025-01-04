@@ -1,5 +1,8 @@
 package storage
-import "github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
+import (
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
+	 "go.mongodb.org/mongo-driver/bson"
+)
 
 
 type Storage interface {
@@ -12,4 +15,5 @@ type Storage interface {
 	CreateQuestion(question types.Question) (string, error)
 	CreateTestCase(testCase types.TestCase) (string, error)
 	GetAllContests() ([]types.ContestBasicInfo, error)
+	GetContestById(id string) ([]bson.M, error)
 }

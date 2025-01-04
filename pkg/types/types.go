@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"time"
+)
+
 type ContestBasicInfo struct {
     ID          string    `bson:"_id" json:"contest_id"`
     Title       string    `bson:"title" json:"title"`
@@ -8,3 +11,4 @@ type ContestBasicInfo struct {
     EndTime     time.Time `bson:"end_time" json:"end_time"`
     Description string    `bson:"description" json:"description"`
 }
+

@@ -22,14 +22,14 @@ type User struct {
 }
 
 type Contest struct {
-    ID        string    `bson:"_id,omitempty" json:"contest_id"`
-    Title     string    `bson:"title" json:"title" validate:"required"`
-    StartTime time.Time `bson:"start_time" json:"start_time" validate:"required"`
-    EndTime   time.Time `bson:"end_time" json:"end_time" validate:"required"`
-    Description string `bson:"description" json:"description" validate:"required"`
-    CreatedBy primitive.ObjectID `bson:"created_by" json:"created_by"`
-    QuestionIDs []string  `bson:"question_ids" json:"question_ids" validate:"required"`
-    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+    ID          primitive.ObjectID   `bson:"_id,omitempty" json:"contest_id"`
+    Title       string              `bson:"title" json:"title" validate:"required"`
+    StartTime   time.Time           `bson:"start_time" json:"start_time" validate:"required"`
+    EndTime     time.Time           `bson:"end_time" json:"end_time" validate:"required"`
+    Description string              `bson:"description" json:"description" validate:"required"`
+    CreatedBy   string            `bson:"created_by" json:"created_by"`
+    QuestionIDs []string          `bson:"question_ids" json:"question_ids" validate:"required"`
+    CreatedAt   time.Time         `bson:"created_at" json:"created_at"`
 }
 
 type Question struct {
