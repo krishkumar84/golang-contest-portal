@@ -33,7 +33,7 @@ type Contest struct {
 }
 
 type Question struct {
-    ID        string    `bson:"_id,omitempty" json:"question_id" validate:"required"`
+    ID        string    `bson:"_id,omitempty" json:"question_id"`
     Title     string    `bson:"title" json:"title" validate:"required"`
     Description string `bson:"description" json:"description" validate:"required"`
     Difficulty string `bson:"difficulty" json:"difficulty"`

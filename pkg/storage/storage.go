@@ -16,4 +16,5 @@ type Storage interface {
 	CreateTestCase(testCase types.TestCase) (string, error)
 	GetAllContests() ([]types.ContestBasicInfo, error)
 	GetContestById(id string) ([]bson.M, error)
+	GetQuestionById(id string) ([]bson.M, error)
 }

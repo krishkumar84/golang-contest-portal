@@ -239,3 +239,72 @@ func (m *MongoDB) GetContestById(id string) ([]bson.M, error) {
 
     return results, nil
 }
+
+func (m *MongoDB) GetQuestionById(id string) ([]bson.M, error) {
+    collection := m.db.Collection("questions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    objectId, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return nil, fmt.Errorf("invalid question id format")
+    }
+
+    pipeline := mongo.Pipeline{
+        {{Key: "$match", Value: bson.D{{Key: "_id", Value: objectId}}}},
+        {{Key: "$addFields", Value: bson.D{
+            {Key: "test_case_ids", Value: bson.D{
+                {Key: "$map", Value: bson.D{
+                    {Key: "input", Value: "$test_case_ids"},
+                    {Key: "as", Value: "tid"},
+                    {Key: "in", Value: bson.D{
+                        {Key: "$toObjectId", Value: "$$tid"},
+                    }},
+                }},
+            }},
+        }}},
+        {{Key: "$lookup", Value: bson.D{
+            {Key: "from", Value: "test_cases"},
+            {Key: "localField", Value: "test_case_ids"},
+            {Key: "foreignField", Value: "_id"},
+            {Key: "as", Value: "test_cases"},
+        }}},
+        {{Key: "$project", Value: bson.D{
+            {Key: "_id", Value: 1},
+            {Key: "title", Value: 1},
+            {Key: "description", Value: 1},
+            {Key: "difficulty", Value: 1},
+            {Key: "tags", Value: 1},
+            {Key: "points", Value: 1},
+            {Key: "test_cases", Value: bson.D{
+                {Key: "$map", Value: bson.D{
+                    {Key: "input", Value: "$test_cases"},
+                    {Key: "as", Value: "tc"},
+                    {Key: "in", Value: bson.D{
+                        {Key: "_id", Value: "$$tc._id"},
+                        {Key: "input", Value: "$$tc.input"},
+                        {Key: "expected_output", Value: "$$tc.expected_output"},
+                        {Key: "visibility", Value: "$$tc.visibility"},
+                    }},
+                }},
+            }},
+        }}},
+    }
+
+    var results []bson.M
+    cursor, err := collection.Aggregate(ctx, pipeline)
+    if err != nil {
+        return nil, fmt.Errorf("error executing aggregation: %v", err)
+    }
+    defer cursor.Close(ctx)
+
+    if err := cursor.All(ctx, &results); err != nil {
+        return nil, fmt.Errorf("error decoding result: %v", err)
+    }
+
+    if len(results) == 0 {
+        return nil, mongo.ErrNoDocuments
+    }
+
+    return results, nil
+}
