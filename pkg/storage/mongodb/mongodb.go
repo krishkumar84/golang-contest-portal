@@ -349,3 +349,38 @@ func (m *MongoDB) AddQuestionToContest(contestId string, question types.Question
 
     return questionId, nil
 }
+
+func (m *MongoDB) AddTestCaseToQuestion(questionId string, testCase types.TestCase) (string, error) {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    fmt.Printf("Received question ID: %s\n", questionId)
+
+    // Create test case
+    testCaseResult, err := m.db.Collection("test_cases").InsertOne(ctx, testCase)
+    if err != nil {
+        return "", fmt.Errorf("failed to create test case: %v", err)
+    }
+    testCaseId := testCaseResult.InsertedID.(primitive.ObjectID).Hex()
+
+    fmt.Printf("Created test case with ID: %s\n", testCaseId)
+
+    // Convert question ID to ObjectID
+    questionObjID, err := primitive.ObjectIDFromHex(questionId)
+    if err != nil {
+        return "", fmt.Errorf("invalid question id format: %v", err)
+    }
+
+    // Update question with test case ID
+    filter := bson.M{"_id": questionObjID}
+    update := bson.M{"$push": bson.M{"test_case_ids": testCaseId}}
+    
+    result, err := m.db.Collection("questions").UpdateOne(ctx, filter, update)
+    if err != nil {
+        return "", fmt.Errorf("failed to update question: %v", err)
+    }
+
+    fmt.Printf("Updated question. Modified count: %d\n", result.ModifiedCount)
+
+    return testCaseId, nil
+}

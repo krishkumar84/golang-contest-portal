@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/types"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/utils/response"
@@ -44,5 +45,38 @@ func GetQuestionById(storage storage.Storage) http.HandlerFunc {
 			return
 		}
 		response.WriteJson(w, http.StatusOK, question)
+	}
+}
+
+func AddTestCaseToQuestion(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		if len(parts) < 5 {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid URL format")))
+			return
+		}
+		questionId := parts[3]
+		
+		fmt.Printf("Extracted question ID: %s\n", questionId)
+		
+		if questionId == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("question id is required")))
+			return
+		}
+
+		var testCase types.TestCase
+		if err := json.NewDecoder(r.Body).Decode(&testCase); err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		testCaseId, err := storage.AddTestCaseToQuestion(questionId, testCase)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusCreated, map[string]string{"test_case_id": testCaseId})
 	}
 }
