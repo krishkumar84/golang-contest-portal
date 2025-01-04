@@ -64,3 +64,36 @@ func GetContestById(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, contest)
 	}
 }
+
+func AddQuestionToContest(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		if len(parts) < 5 {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid URL format")))
+			return
+		}
+		contestId := parts[3]
+		
+		fmt.Printf("Extracted contest ID: %s\n", contestId)
+		
+		if contestId == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("contest id is required")))
+			return
+		}
+
+		var question types.Question
+		if err := json.NewDecoder(r.Body).Decode(&question); err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		questionId, err := storage.AddQuestionToContest(contestId, question)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusCreated, map[string]string{"question_id": questionId})
+	}
+}

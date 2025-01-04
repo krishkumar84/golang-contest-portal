@@ -18,4 +18,5 @@ type Storage interface {
 	GetAllContests() ([]types.ContestBasicInfo, error)
 	GetContestById(id string) ([]bson.M, error)
 	GetQuestionById(id string) ([]bson.M, error)
+	AddQuestionToContest(contestId string, question types.Question) (string, error)
 }

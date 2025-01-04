@@ -314,3 +314,38 @@ func (m *MongoDB) GetQuestionById(id string) ([]bson.M, error) {
 
     return results, nil
 }
+
+func (m *MongoDB) AddQuestionToContest(contestId string, question types.Question) (string, error) {
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    fmt.Printf("Received contest ID: %s\n", contestId)
+
+    question.TestCaseIDs = []string{}
+
+    //Create question
+    questionResult, err := m.db.Collection("questions").InsertOne(ctx, question)
+    if err != nil {
+        return "", fmt.Errorf("failed to create question: %v", err)
+    }
+    questionId := questionResult.InsertedID.(primitive.ObjectID).Hex()
+
+    fmt.Printf("Created question with ID: %s\n", questionId)
+
+    contestObjID, err := primitive.ObjectIDFromHex(contestId)
+    if err != nil {
+        return "", fmt.Errorf("invalid contest id format: %v", err)
+    }
+
+    filter := bson.M{"_id": contestObjID}
+    update := bson.M{"$push": bson.M{"question_ids": questionId}}
+    
+    result, err := m.db.Collection("contests").UpdateOne(ctx, filter, update)
+    if err != nil {
+        return "", fmt.Errorf("failed to update contest: %v", err)
+    }
+
+    fmt.Printf("Updated contest. Modified count: %d\n", result.ModifiedCount)
+
+    return questionId, nil
+}
