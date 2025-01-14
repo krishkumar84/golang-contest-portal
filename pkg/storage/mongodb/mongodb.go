@@ -137,6 +137,27 @@ func (m *MongoDB) CreateQuestion(question types.Question) (string, error) {
     return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
+func (m *MongoDB) DeleteContestById(id string) error {
+    objectId, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return fmt.Errorf("invalid contest id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    result, err := m.db.Collection("contests").DeleteOne(ctx, bson.M{"_id": objectId})
+    if err != nil {
+        return err
+    }
+
+    if result.DeletedCount == 0 {
+        return fmt.Errorf("no contest found with the given id")
+    }
+
+    return nil
+}
+
 func (m *MongoDB) CreateTestCase(testCase types.TestCase) (string, error) {
     collection := m.db.Collection("test_cases")
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

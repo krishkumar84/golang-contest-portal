@@ -30,6 +30,25 @@ func CreateContest(storage storage.Storage) http.HandlerFunc {
 	}
 }
 
+func DeleteContestById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		id := path[strings.LastIndex(path, "/")+1:]
+		
+		if id == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("contest id is required")))
+			return
+		}
+
+		if err := storage.DeleteContestById(id); err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"status": "success", "message": "contest deleted successfully"})
+	}
+}
+
 func GetAllContests(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contests, err := storage.GetAllContests()

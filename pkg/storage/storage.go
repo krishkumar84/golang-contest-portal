@@ -13,6 +13,7 @@ type Storage interface {
 	CreateUser(name string, email string, password string, studentId string, role types.Role) (string, error)
 	GetUserByEmail(email string) (*types.User, error)
 	CreateContest(contest types.Contest) (string, error)
+	DeleteContestById(id string) error
 	CreateQuestion(question types.Question) (string, error)
 	CreateTestCase(testCase types.TestCase) (string, error)
 	GetAllContests() ([]types.ContestBasicInfo, error)

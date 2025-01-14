@@ -71,6 +71,7 @@ router.Handle("GET /api/admin/test",
 	router.HandleFunc("POST /api/signup",users.New(storage))
 	router.HandleFunc("POST /api/login",auth.Login(storage,cfg.JwtSecret))
 	router.HandleFunc("POST /api/contest",contest.CreateContest(storage))
+	router.HandleFunc("DELETE /api/contest/{id}",contest.DeleteContestById(storage))
 	router.HandleFunc("POST /api/question",question.CreateQuestion(storage))
 	router.HandleFunc("POST /api/testcase",testcase.CreateTestCase(storage))
 	router.HandleFunc("GET /api/contest",contest.GetAllContests(storage))
