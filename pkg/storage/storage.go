@@ -15,6 +15,7 @@ type Storage interface {
 	CreateContest(contest types.Contest) (string, error)
 	DeleteContestById(id string) error
 	CreateQuestion(question types.Question) (string, error)
+	EditQuestionById(id string, question types.Question) error
 	EditContestById(id string, contest types.Contest) error
 	DeleteQuestionFromContestById(contestId string, questionId string) error
 	CreateTestCase(testCase types.TestCase) (string, error)

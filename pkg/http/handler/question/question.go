@@ -109,3 +109,29 @@ func DeleteTestCaseFromQuestionById(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, map[string]string{"message": "test case deleted successfully"})
 	}
 }
+
+func EditQuestionById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var questionReq types.Question
+		if err := json.NewDecoder(r.Body).Decode(&questionReq); err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		path := r.URL.Path
+		id := path[strings.LastIndex(path, "/")+1:]
+		
+		if id == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("question id is required")))
+			return
+		}
+
+		err := storage.EditQuestionById(id, questionReq)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "question updated successfully"})
+	}
+}

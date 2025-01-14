@@ -382,6 +382,57 @@ func (m *MongoDB) GetQuestionById(id string) ([]bson.M, error) {
     return results, nil
 }
 
+func (m*MongoDB)  EditQuestionById(id string, updateData types.Question) error {
+    questionObjID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return fmt.Errorf("invalid question id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    var question types.Question
+    err = m.db.Collection("questions").FindOne(ctx, bson.M{"_id": questionObjID}).Decode(&question)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return fmt.Errorf("no question found with the given id")
+        }
+        return fmt.Errorf("error checking question existence: %v", err)
+    }
+
+    // Prepare the update
+    update := bson.M{}
+    if updateData.Title != "" {
+        update["title"] = updateData.Title
+    }
+    if updateData.Description != "" {
+        update["description"] = updateData.Description
+    }
+    if updateData.Difficulty != "" {
+        update["difficulty"] = updateData.Difficulty
+    }
+    if updateData.Tags != nil {
+        update["tags"] = updateData.Tags
+    }
+    if updateData.Points != 0 {
+        update["points"] = updateData.Points
+    }
+    if updateData.Cpu_time_limit != 0 {
+        update["cpu_time_limit"] = updateData.Cpu_time_limit
+    }
+    if updateData.Memory_limit != 0 {
+        update["memory_limit"] = updateData.Memory_limit
+    }
+    if len(update) > 0 {
+        _, err = m.db.Collection("questions").UpdateOne(ctx, bson.M{"_id": questionObjID}, bson.M{"$set": update})
+        if err != nil {
+            return fmt.Errorf("failed to update question: %v", err)
+        }
+    }
+
+    return nil
+}
+
 func (m *MongoDB) AddQuestionToContest(contestId string, question types.Question) (string, error) {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
