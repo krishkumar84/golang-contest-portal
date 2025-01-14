@@ -78,6 +78,7 @@ router.Handle("GET /api/admin/test",
 	router.HandleFunc("GET /api/contest/{id}",contest.GetContestById(storage))
 	router.HandleFunc("GET /api/question/{id}",question.GetQuestionById(storage))
 	router.HandleFunc("POST /api/contest/{id}/question", contest.AddQuestionToContest(storage))
+	router.HandleFunc("DELETE /api/contest/{contestId}/question/{questionId}", contest.DeleteQuestionFromContestById(storage))
 	router.HandleFunc("POST /api/question/{id}/testcase", question.AddTestCaseToQuestion(storage))
     
 	//start server

@@ -119,24 +119,6 @@ func (m *MongoDB) CreateContest(contest types.Contest) (string, error) {
     return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func (m *MongoDB) CreateQuestion(question types.Question) (string, error) {
-    collection := m.db.Collection("questions")
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-
-    if err := validator.New().Struct(question); err != nil {
-        validateErrs := err.(validator.ValidationErrors)
-        return "", fmt.Errorf("validation failed: %v", validateErrs)
-    }
-
-    result, err := collection.InsertOne(ctx, question)
-    if err != nil {
-        return "", err
-    }
-
-    return result.InsertedID.(primitive.ObjectID).Hex(), nil
-}
-
 func (m *MongoDB) DeleteContestById(id string) error {
     objectId, err := primitive.ObjectIDFromHex(id)
     if err != nil {
@@ -156,6 +138,24 @@ func (m *MongoDB) DeleteContestById(id string) error {
     }
 
     return nil
+}
+
+func (m *MongoDB) CreateQuestion(question types.Question) (string, error) {
+    collection := m.db.Collection("questions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    if err := validator.New().Struct(question); err != nil {
+        validateErrs := err.(validator.ValidationErrors)
+        return "", fmt.Errorf("validation failed: %v", validateErrs)
+    }
+
+    result, err := collection.InsertOne(ctx, question)
+    if err != nil {
+        return "", err
+    }
+
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (m *MongoDB) CreateTestCase(testCase types.TestCase) (string, error) {
@@ -369,6 +369,51 @@ func (m *MongoDB) AddQuestionToContest(contestId string, question types.Question
     fmt.Printf("Updated contest. Modified count: %d\n", result.ModifiedCount)
 
     return questionId, nil
+}
+
+func (m *MongoDB) DeleteQuestionFromContestById(contestId string, questionId string) error {
+    contestObjID, err := primitive.ObjectIDFromHex(contestId)
+    if err != nil {
+        return fmt.Errorf("invalid contest id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    // Check if contest exists
+    var contest types.Contest
+    err = m.db.Collection("contests").FindOne(ctx, bson.M{"_id": contestObjID}).Decode(&contest)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return fmt.Errorf("no contest found with the given id")
+        }
+        return fmt.Errorf("error checking contest existence: %v", err)
+    }
+
+    found := false
+    for _, qID := range contest.QuestionIDs {
+        if qID == questionId {
+            found = true
+            break
+        }
+    }
+    if !found {
+        return fmt.Errorf("no question found with the given id in the contest")
+    }
+
+    filter := bson.M{"_id": contestObjID}
+    update := bson.M{"$pull": bson.M{"question_ids": questionId}}
+    
+    result, err := m.db.Collection("contests").UpdateOne(ctx, filter, update)
+    if err != nil {
+        return fmt.Errorf("failed to update contest: %v", err)
+    }
+
+    if result.ModifiedCount == 0 {
+        return fmt.Errorf("no question found with the given id in the contest")
+    }
+
+    return nil
 }
 
 func (m *MongoDB) AddTestCaseToQuestion(questionId string, testCase types.TestCase) (string, error) {

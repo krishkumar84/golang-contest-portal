@@ -116,3 +116,31 @@ func AddQuestionToContest(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusCreated, map[string]string{"question_id": questionId})
 	}
 }
+
+func DeleteQuestionFromContestById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		if len(parts) < 6 {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid URL format")))
+			return
+		}
+		contestId := parts[3]
+		questionId := parts[5]
+		
+		fmt.Printf("Extracted contest ID: %s\n", contestId)
+		fmt.Printf("Extracted question ID: %s\n", questionId)
+		
+		if contestId == "" || questionId == "" {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("contest id and question id are required")))
+			return
+		}
+
+		if err := storage.DeleteQuestionFromContestById(contestId, questionId); err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"status": "success", "message": "question deleted from contest successfully"})
+	}
+}
