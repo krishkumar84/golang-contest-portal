@@ -450,3 +450,48 @@ func (m *MongoDB) AddTestCaseToQuestion(questionId string, testCase types.TestCa
 
     return testCaseId, nil
 }
+
+func (m *MongoDB) DeleteTestCaseFromQuestionById(questionId string, testCaseId string) error {
+    questionObjID, err := primitive.ObjectIDFromHex(questionId)
+    if err != nil {
+        return fmt.Errorf("invalid question id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    // Check if question exists
+    var question types.Question
+    err = m.db.Collection("questions").FindOne(ctx, bson.M{"_id": questionObjID}).Decode(&question)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return fmt.Errorf("no question found with the given id")
+        }
+        return fmt.Errorf("error checking question existence: %v", err)
+    }
+
+    found := false
+    for _, tcID := range question.TestCaseIDs {
+        if tcID == testCaseId {
+            found = true
+            break
+        }
+    }
+    if !found {
+        return fmt.Errorf("no test case found with the given id in the question")
+    }
+
+    filter := bson.M{"_id": questionObjID}
+    update := bson.M{"$pull": bson.M{"test_case_ids": testCaseId}}
+    
+    result, err := m.db.Collection("questions").UpdateOne(ctx, filter, update)
+    if err != nil {
+        return fmt.Errorf("failed to update question: %v", err)
+    }
+
+    if result.ModifiedCount == 0 {
+        return fmt.Errorf("no test case found with the given id in the question")
+    }
+
+    return nil
+}

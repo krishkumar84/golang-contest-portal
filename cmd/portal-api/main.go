@@ -80,6 +80,7 @@ router.Handle("GET /api/admin/test",
 	router.HandleFunc("POST /api/contest/{id}/question", contest.AddQuestionToContest(storage))
 	router.HandleFunc("DELETE /api/contest/{contestId}/question/{questionId}", contest.DeleteQuestionFromContestById(storage))
 	router.HandleFunc("POST /api/question/{id}/testcase", question.AddTestCaseToQuestion(storage))
+	router.HandleFunc("DELETE /api/question/{questionId}/testcase/{testCaseId}", question.DeleteTestCaseFromQuestionById(storage))
     
 	//start server
 

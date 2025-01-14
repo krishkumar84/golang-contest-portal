@@ -22,4 +22,5 @@ type Storage interface {
 	GetQuestionById(id string) ([]bson.M, error)
 	AddQuestionToContest(contestId string, question types.Question) (string, error)
 	AddTestCaseToQuestion(questionId string, testCase types.TestCase) (string, error)
+	DeleteTestCaseFromQuestionById(questionId string, testCaseId string) error
 }
