@@ -25,4 +25,5 @@ type Storage interface {
 	AddQuestionToContest(contestId string, question types.Question) (string, error)
 	AddTestCaseToQuestion(questionId string, testCase types.TestCase) (string, error)
 	DeleteTestCaseFromQuestionById(questionId string, testCaseId string) error
+	EditTestCaseById(testCaseId string, testCase types.TestCase) error
 }

@@ -548,6 +548,45 @@ func (m *MongoDB) AddTestCaseToQuestion(questionId string, testCase types.TestCa
     return testCaseId, nil
 }
 
+func (m *MongoDB) EditTestCaseById(id string, updateData types.TestCase) error {
+    testCaseObjID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return fmt.Errorf("invalid test case id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    var testCase types.TestCase
+    err = m.db.Collection("test_cases").FindOne(ctx, bson.M{"_id": testCaseObjID}).Decode(&testCase)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return fmt.Errorf("no test case found with the given id")
+        }
+        return fmt.Errorf("error checking test case existence: %v", err)
+    }
+
+    // Prepare the update
+    update := bson.M{}
+    if updateData.Input != nil {
+        update["input"] = updateData.Input
+    }
+    if updateData.ExpectedOutput != nil {
+        update["expected_output"] = updateData.ExpectedOutput
+    }
+    if updateData.Visibility != "" {
+        update["visibility"] = updateData.Visibility
+    }
+    if len(update) > 0 {
+        _, err = m.db.Collection("test_cases").UpdateOne(ctx, bson.M{"_id": testCaseObjID}, bson.M{"$set": update})
+        if err != nil {
+            return fmt.Errorf("failed to update test case: %v", err)
+        }
+    }
+
+    return nil
+}
+
 func (m *MongoDB) DeleteTestCaseFromQuestionById(questionId string, testCaseId string) error {
     questionObjID, err := primitive.ObjectIDFromHex(questionId)
     if err != nil {
