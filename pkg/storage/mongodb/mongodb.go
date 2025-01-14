@@ -119,6 +119,52 @@ func (m *MongoDB) CreateContest(contest types.Contest) (string, error) {
     return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
+func (m *MongoDB) EditContestById(id string, updateData types.Contest) error {
+    contestObjID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return fmt.Errorf("invalid contest id format")
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    var contest types.Contest
+    err = m.db.Collection("contests").FindOne(ctx, bson.M{"_id": contestObjID}).Decode(&contest)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return fmt.Errorf("no contest found with the given id")
+        }
+        return fmt.Errorf("error checking contest existence: %v", err)
+    }
+
+    // Prepare the update
+    update := bson.M{}
+    if updateData.Title != "" {
+        update["title"] = updateData.Title
+    }
+    if !updateData.StartTime.IsZero() {
+        update["start_time"] = updateData.StartTime
+    }
+    if !updateData.EndTime.IsZero() {
+        update["end_time"] = updateData.EndTime
+    }
+    if updateData.Description != "" {
+        update["description"] = updateData.Description
+    }
+    if updateData.CreatedBy != "" {
+        update["created_by"] = updateData.CreatedBy
+    }
+
+    if len(update) > 0 {
+        _, err = m.db.Collection("contests").UpdateOne(ctx, bson.M{"_id": contestObjID}, bson.M{"$set": update})
+        if err != nil {
+            return fmt.Errorf("failed to update contest: %v", err)
+        }
+    }
+
+    return nil
+}
+
 func (m *MongoDB) DeleteContestById(id string) error {
     objectId, err := primitive.ObjectIDFromHex(id)
     if err != nil {
