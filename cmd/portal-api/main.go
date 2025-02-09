@@ -21,6 +21,8 @@ import (
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/middleware"
 	"github.com/krishkumar84/bdcoe-golang-portal/pkg/storage/mongodb"
 	// "github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/users"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/judge0"
+	"github.com/krishkumar84/bdcoe-golang-portal/pkg/http/handler/submission"
 )
 
 func main() {
@@ -28,7 +30,10 @@ func main() {
 	// load config
 
 	cfg := config.MustLoad()
-
+    judgeClient := judge0.NewClient(
+        "judge0-portal.nip.io", 
+        "",                
+    )
 
 	//database
 	//storage
@@ -84,6 +89,7 @@ router.Handle("GET /api/admin/test",
 	router.HandleFunc("DELETE /api/contest/{contestId}/question/{questionId}", contest.DeleteQuestionFromContestById(storage))
 	router.HandleFunc("POST /api/question/{id}/testcase", question.AddTestCaseToQuestion(storage))
 	router.HandleFunc("DELETE /api/question/{questionId}/testcase/{testCaseId}", question.DeleteTestCaseFromQuestionById(storage))
+	router.HandleFunc("POST /api/submissions", submission.CreateSubmission(storage, judgeClient))
     
 	//start server
 

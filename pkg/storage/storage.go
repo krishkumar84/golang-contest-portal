@@ -26,4 +26,7 @@ type Storage interface {
 	AddTestCaseToQuestion(questionId string, testCase types.TestCase) (string, error)
 	DeleteTestCaseFromQuestionById(questionId string, testCaseId string) error
 	EditTestCaseById(testCaseId string, testCase types.TestCase) error
+	CreateSubmission(submission types.Submission) (string, error)
+	GetSubmissionById(id string) (*types.Submission, error)
+	UpdateSubmissionStatus(id string, status string, score int) error
 }

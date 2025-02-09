@@ -631,3 +631,56 @@ func (m *MongoDB) DeleteTestCaseFromQuestionById(questionId string, testCaseId s
 
     return nil
 }
+
+func (m *MongoDB) CreateSubmission(submission types.Submission) (string, error) {
+    collection := m.db.Collection("submissions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    result, err := collection.InsertOne(ctx, submission)
+    if err != nil {
+        return "", err
+    }
+
+    return result.InsertedID.(primitive.ObjectID).Hex(), nil
+}
+
+func (m *MongoDB) GetSubmissionById(id string) (*types.Submission, error) {
+    objectId, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return nil, fmt.Errorf("invalid submission id format")
+    }
+
+    collection := m.db.Collection("submissions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    var submission types.Submission
+    err = collection.FindOne(ctx, bson.M{"_id": objectId}).Decode(&submission)
+    if err != nil {
+        return nil, err
+    }
+
+    return &submission, nil
+}
+
+func (m *MongoDB) UpdateSubmissionStatus(id string, status string, score int) error {
+    objectId, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        return fmt.Errorf("invalid submission id format")
+    }
+
+    collection := m.db.Collection("submissions")
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    update := bson.M{
+        "$set": bson.M{
+            "status": status,
+            "score":  score,
+        },
+    }
+
+    _, err = collection.UpdateOne(ctx, bson.M{"_id": objectId}, update)
+    return err
+}

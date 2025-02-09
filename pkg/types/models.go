@@ -62,15 +62,26 @@ type TestCase struct {
 }
 
 type Submission struct {
-    ID string `bson:"_id,omitempty" json:"submission_id"`
-    UserID primitive.ObjectID `bson:"user_id" json:"user_id"`
-    QuestionID primitive.ObjectID `bson:"question_id" json:"question_id"`
-    ContestID primitive.ObjectID `bson:"contest_id" json:"contest_id"`
-    Code string `bson:"code" json:"code"`
-    LanguageId string `bson:"language_id" json:"language_id"`
-    Status string `bson:"status" json:"status"`
-    CreatedAt time.Time `bson:"created_at" json:"created_at"`
+    ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+    UserID      primitive.ObjectID `bson:"user_id" json:"user_id" validate:"required"`
+    QuestionID  primitive.ObjectID `bson:"question_id" json:"question_id" validate:"required"`
+    ContestID   primitive.ObjectID `bson:"contest_id" json:"contest_id" validate:"required"`
+    Code        string            `bson:"code" json:"code" validate:"required"`
+    LanguageID  string            `bson:"language_id" json:"language_id" validate:"required"`
+    Status      string            `bson:"status" json:"status"`
+    Score       int               `bson:"score" json:"score"`
+    SubmittedAt time.Time         `bson:"submitted_at" json:"submitted_at"`
 }
+
+// Add submission status constants
+const (
+    StatusPending     = "pending"
+    StatusAccepted    = "accepted"
+    StatusWrongAnswer = "wrong_answer"
+    StatusError       = "error"
+    StatusTimeLimitExceeded = "time_limit_exceeded"
+    StatusCompileError = "compile_error"
+)
 
 type Leaderboard struct {
     ID string `bson:"_id,omitempty" json:"leaderboard_id"`
